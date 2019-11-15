@@ -1,0 +1,193 @@
+SET names utf8;
+CREATE DATABASE College;
+USE College
+
+CREATE TABLE student(
+    student_id INT PRIMARY KEY,
+    name VARCHAR(10) NOT NULL,
+    year TINYINT NOT NULL DEFAULT 1,
+    dept_no INT NOT NULL,
+    major VARCHAR(20)
+);
+
+DESC student;
+
+CREATE TABLE department(
+    dept_no INT PRIMARY KEY AUTO_INCREMENT,
+    dept_name VARCHAR(20) NOT NULL UNIQUE,
+    office VARCHAR(20) NOT NULL,
+    office_tel VARCHAR(13)
+);
+
+DESC department;
+
+ALTER TABLE student
+    CHANGE major major VARCHAR(30);
+
+DESC student;
+
+ALTER TABLE student
+    ADD COLUMN gender BOOLEAN;
+
+DESC student;
+
+ALTER TABLE student
+    DROP COLUMN gender;
+
+DESC student;
+
+/*
+ALTER TABLE student
+ADD FOREIGN KEY (dept_no) REFERENCES department(dept_no); 
+
+ALTER TABLE student
+DROP FOREIGN KEY dept_no; 
+
+ALTER TABLE student
+ADD FOREIGN KEY (major) REFERENCES department(dept_name); 
+
+ALTER TABLE student
+DROP FOREIGN KEY major; 
+*/
+
+INSERT INTO student VALUES (20070002, 'Jane Smith', 3, 4, 'Business Administration');
+INSERT INTO student VALUES (20060001, 'Ashley Jackson', 4, 4, 'Business Administration');
+INSERT INTO student VALUES (20030001, 'Liam Johnson', 4, 2, 'Electrical Engineering');
+INSERT INTO student VALUES (20040003, 'Jacob Lee', 3, 2, 'Electrical Engineering');
+INSERT INTO student VALUES (20060002, 'Noah Kim', 3, 1, 'Computer Science');
+INSERT INTO student VALUES (20100002, 'Ava Lim', 3, 4, 'Business Administration');
+INSERT INTO student VALUES (20110001, 'Emma Watson', 2, 1, 'Computer Science');
+INSERT INTO student VALUES (20080003, 'Lisa Maria', 4, 3, 'Law');
+INSERT INTO student VALUES (20040002, 'Jacob William', 4, 5, 'Law');
+INSERT INTO student VALUES (20070001, 'Emily Rose', 4, 4, 'Business Administration');
+INSERT INTO student VALUES (20100001, 'Ethan Hunt', 3, 4, 'Business Administration');
+INSERT INTO student VALUES (20110002, 'Jason Mraz' 2, 1, 'Electrical Engineering');
+INSERT INTO student VALUES (20030002, 'John Smith', 5, 1, 'Computer Science');
+INSERT INTO student VALUES (20070003, 'Sophia Park', 4, 3, 'Law');
+INSERT INTO student VALUES (20070007, 'James Michael', 2, 4, 'Business Administration');
+INSERT INTO student VALUES (20100003, 'James Bond', 3, 1, 'Computer Science');
+INSERT INTO student VALUES (20070005, 'Olivia Madison', 2, 5, 'English Language and Literature');
+
+INSERT INTO department VALUES (1, 'Computer Science', 'Science Building 101', '02-3290-0123');
+INSERT INTO department VALUES (2, 'Electrical Engineering', 'Engineering Building 401', '02-3290-2345');
+INSERT INTO department VALUES (3, 'Law', 'Law Building 201', '02-3290-7896');
+INSERT INTO department VALUES (4, 'Business Administration', 'Business Building 104', '02-3290-1112');
+INSERT INTO department VALUES (5, 'English Language and Literature', 'Language Building 303', '02-3290-4412');
+
+UPDATE department SET dept_name = 'Electrical Engineering' WHERE dept_name LIKE 'Electrical and Electronics Engineering';
+UPDATE student, department SET student.major = department.dept_name WHERE student.dept_no = department.dept_no;
+
+INSERT INTO department (dept_name, office, office_tel) VALUES ('Special Education', 'Education Building 403', '02-3290-2347');
+
+SET @temp:=0;
+UPDATE student
+SET
+    student.dept_no = @temp := (SELECT MAX(dept_no) FROM department),
+    student.major = (SELECT dept_name FROM department WHERE dept_no = @temp)
+WHERE student.name LIKE 'Emma Watson';
+
+DELETE FROM student WHERE name LIKE 'Jason Mraz';
+
+DELETE FROM student WHERE name LIKE 'John Smith';
+
+SELECT * FROM student WHERE major LIKE 'Computer Science';
+
+SELECT student_id, year, major FROM student;
+
+SELECT * FROM student WHERE year = 3;
+
+SELECT * FROM student WHERE year = 1 OR year = 2;
+
+SELECT s.*
+FROM student s
+JOIN department d ON s.dept_no = d.dept_no
+WHERE d.dept_name LIKE 'Business Administration';
+
+SELECT * FROM student WHERE student_id LIKE '%2007%';
+
+SELECT * FROM student ORDER BY student_id ASC;
+
+SELECT major FROM student GROUP BY major HAVING AVG(year) > 3;
+
+SELECT * FROM student WHERE student_id LIKE '%2007%' LIMIT 2;
+
+USE imdb
+
+SELECT role
+FROM roles r
+JOIN movies m ON r.movie_id = m.id
+WHERE m.name LIKE 'PI';
+
+SELECT first_name, last_name
+FROM actors a
+JOIN roles r ON a.id = r.actor_id
+JOIN movies m ON r.movie_id = m.id
+WHERE m.name LIKE 'PI';
+
+SELECT result1.first_name, result1.last_name
+FROM 
+(SELECT first_name, last_name
+FROM actors a
+JOIN roles r ON a.id = r.actor_id
+JOIN movies m ON r.movie_id = m.id
+WHERE m.name LIKE 'Kill Bill%1%') result1
+JOIN
+(SELECT first_name, last_name
+FROM actors a
+JOIN roles r ON a.id = r.actor_id
+JOIN movies m ON r.movie_id = m.id
+WHERE m.name LIKE 'Kill Bill%2%') result2
+ON result1.first_name = result2.first_name AND result1.last_name = result2.last_name;
+
+SELECT first_name, last_name, COUNT(actor_id)
+FROM actors a
+JOIN roles r ON a.id = r.actor_id
+JOIN movies m ON r.movie_id = m.id
+GROUP BY actor_id
+ORDER BY COUNT(actor_id) DESC
+LIMIT 7;
+
+
+SELECT genre
+FROM movies_genres g
+JOIN movies m ON g.movie_id = m.id
+GROUP BY genre
+ORDER BY COUNT(genre) DESC
+LIMIT 3;
+
+SELECT first_name, last_name
+FROM directors d
+JOIN movies_directors md ON d.id = md.director_id
+JOIN movies m ON md.movie_id = m.id
+JOIN movies_genres mg ON m.id = mg.movie_id
+WHERE mg.genre LIKE 'Thriller'
+GROUP BY d.id
+ORDER BY COUNT(d.id) DESC
+LIMIT 1;
+
+USE simpsons
+
+SELECT s.name, g.grade
+FROM students s
+JOIN grades g ON s.id = g.student_id
+JOIN courses c ON c.id = g.course_id
+WHERE c.name LIKE 'Computer Science 143';
+
+SELECT s.name, g.grade
+FROM students s
+JOIN grades g ON s.id = g.student_id
+JOIN courses c ON c.id = g.course_id
+WHERE c.name LIKE 'Computer Science 143' AND g.grade < 'C';
+
+SELECT s.name, c.name, g.grade
+FROM students s
+JOIN grades g ON s.id = g.student_id
+JOIN courses c ON c.id = g.course_id
+WHERE g.grade < 'C';
+
+SELECT c.name
+FROM students s
+JOIN grades g ON s.id = g.student_id
+JOIN courses c ON c.id = g.course_id
+GROUP BY c.id
+HAVING COUNT(c.id) >= 2;
